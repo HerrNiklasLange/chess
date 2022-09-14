@@ -1,5 +1,6 @@
 #main drive file
 from operator import truediv
+from pickle import TRUE
 import pygame as p
 # from chess 
 import chess_engine
@@ -29,7 +30,8 @@ def main():
     gs = chess_engine.GameState()
     loadImages()
 
-
+    valid_moves = gs.getValidMoves()
+    moveMade = False #flags variable when a move is made
     running = True
     sqSelected = () # no squares is selected
     playerClicks = []#keeps track of player clicks
@@ -37,6 +39,7 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
               running = False
+            #mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos()#x y location of mouse
                 col = location[0]//SQ_SIZE
@@ -49,11 +52,21 @@ def main():
                     playerClicks.append(sqSelected) # append for both first and secnd click
                 if len(playerClicks) == 2: #after two clicks
                     move = chess_engine.Move(playerClicks[0],playerClicks[1], gs.board)
-                    print(move.getChessNotation)
-                    gs.makeMove(move)
+                    #print(move.getChessNotation)
+                    if move in valid_moves:
+                        gs.makeMove(move)
+                        moveMade = True
                     sqSelected = () #resets rows
                     playerClicks = []
-                
+            #key handler
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_a: # undo moves when z is presse
+                    gs.undoMove()
+                    moveMade = True
+
+        if moveMade:
+            valid_moves = gs.getValidMoves
+            moveMade = False 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
